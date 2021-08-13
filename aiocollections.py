@@ -7,7 +7,7 @@ from asyncio import ensure_future
 from asyncio.futures import isfuture
 from contextvars import copy_context, Context
 from inspect import isawaitable
-from typing import Any, Awaitable, Callable, Iterator, List, MutableSet, Optional, Set, Tuple, Union, TypeVar, Coroutine, overload
+from typing import Any, Awaitable, Callable, Iterable, Iterator, List, MutableSet, Optional, Set, Tuple, Union, TypeVar, Coroutine, overload
 from asyncio import Task, create_task, get_running_loop, Future
 
 _F = TypeVar("_F", bound=Future)
@@ -24,8 +24,8 @@ class RunningTasks(MutableSet[Future]):
     if any task is done in the background.
     """
 
-    def __init__(self):
-        self._tasks: Set[Future] = set()
+    def __init__(self, it: Iterable[Future] = None) -> None:
+        self._tasks: Set[Future] = set(it or ())
         self._waiter: Optional[Future] = None
         self._callbacks: List[
             Tuple[Callable[[Future], Any], Context]] = []

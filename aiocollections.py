@@ -4,7 +4,9 @@ __license__ = "MIT License"
 __all__ = ["RunningTasks"]
 
 from asyncio import ensure_future
+from asyncio.futures import isfuture
 from contextvars import copy_context, Context
+from inspect import isawaitable
 from typing import Any, Awaitable, Callable, Iterator, List, MutableSet, Optional, Set, Tuple, Union, TypeVar, Coroutine, overload
 from asyncio import Task, create_task, get_running_loop, Future
 
@@ -30,11 +32,17 @@ class RunningTasks(MutableSet[Future]):
 
     def add(self, task: Future) -> None:
         """Add a task to the set of active tasks."""
+        if not isfuture(task):
+            raise TypeError(
+                f"task must be a Future object, not {type(task)!r}. "
+                f"Have you meant {self.__class__.__name__}.create_task()?")
         self._tasks.add(task)
         task.add_done_callback(self._task_done)
 
     def discard(self, task: Future) -> None:
         """Remove a task from the set of active tasks."""
+        if not isfuture(task):
+            raise TypeError("task must be a Future object.")
         self._tasks.discard(task)
         task.remove_done_callback(self._task_done)
         self._wakeup()  # Check if there are no more tasks
@@ -92,7 +100,7 @@ class RunningTasks(MutableSet[Future]):
 
     def _task_done(self, task: Future) -> None:
         """Called when a task is done.
-        
+
         Removes the task from the set of active tasks
         and runs any callbacks
         """
@@ -105,7 +113,7 @@ class RunningTasks(MutableSet[Future]):
     @overload
     def create_task(self, awaitable: _F) -> _F:
         ...
-    
+
     @overload
     def create_task(self, awaitable: Awaitable) -> Task:
         ...
@@ -128,7 +136,7 @@ class RunningTasks(MutableSet[Future]):
 
     async def wait(self) -> None:
         """Wait for all tasks to finish.
-        
+
         Note: If tasks are added while waiting, in rare cases
         the new tasks might not be waited for. This behavior
         is intended.

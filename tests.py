@@ -1,13 +1,12 @@
 import asyncio
-from asyncio import futures
-from asyncio.tasks import create_task
-from queue import Empty
 
 from unittest import IsolatedAsyncioTestCase
 from aiocollections import RunningTasks
 
+
 async def _empty_coro():
     pass
+
 
 class RunningTaskTest(IsolatedAsyncioTestCase):
     def setUp(self) -> None:
@@ -145,7 +144,7 @@ class RunningTaskTest(IsolatedAsyncioTestCase):
         await task
         self.assertEqual(0, result)
         self.assertEqual(1, num_removed)
-    
+
     async def test_discarded_task_done_handler(self):
         """Make sure done handler is not called on a discarded task"""
         waiter = self.loop.create_future()
@@ -156,10 +155,11 @@ class RunningTaskTest(IsolatedAsyncioTestCase):
             await continue_
 
         result = False
+
         def handler(task):
             nonlocal result
             result = True
-        
+
         task = self.running_tasks.create_task(coro())
         self.running_tasks.add_done_handler(handler)
         await waiter
@@ -205,7 +205,7 @@ class RunningTaskTest(IsolatedAsyncioTestCase):
         async def coro():
             await future
 
-        task = self.running_tasks.create_task(coro())
+        self.running_tasks.create_task(coro())
         waiting = asyncio.create_task(self.running_tasks.wait())
         waiting2 = asyncio.create_task(self.running_tasks.wait())
 

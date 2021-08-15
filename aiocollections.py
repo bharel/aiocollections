@@ -6,9 +6,11 @@ __all__ = ["RunningTasks"]
 from asyncio import ensure_future
 from asyncio.futures import isfuture
 from contextvars import copy_context, Context
-from inspect import isawaitable
-from typing import Any, Awaitable, Callable, Iterable, Iterator, List, MutableSet, Optional, Set, Tuple, Union, TypeVar, Coroutine, overload
-from asyncio import Task, create_task, get_running_loop, Future
+from typing import (
+    Any, Awaitable, Callable, Iterable,
+    Iterator, List, MutableSet, Optional,
+    Set, Tuple, TypeVar, overload)
+from asyncio import Task, get_running_loop, Future
 
 _F = TypeVar("_F", bound=Future)
 

@@ -25,7 +25,7 @@ class RunningTaskTest(IsolatedAsyncioTestCase):
             nonlocal ran
             ran = True
 
-        task = self.running_tasks.create_task(coro)
+        task = self.running_tasks.create_task(coro())
         self.assertEqual(1, len(self.running_tasks))
         self.assertIsInstance(task, asyncio.Task)
         await task
@@ -37,6 +37,7 @@ class RunningTaskTest(IsolatedAsyncioTestCase):
         self.assertEqual(1, len(self.running_tasks))
         self.assertIs(task, future)
         future.set_result(None)
+        await asyncio.sleep(0)
         self.assertEqual(0, len(self.running_tasks))
 
     async def test_add_task(self):
@@ -92,6 +93,7 @@ class RunningTaskTest(IsolatedAsyncioTestCase):
         task = self.running_tasks.create_task(coro())
         self.running_tasks.add_done_handler(handler)
         await task
+        await asyncio.sleep(0)
         self.assertEqual(1, result)
 
     async def test_add_done_handler_error(self):
@@ -107,7 +109,9 @@ class RunningTaskTest(IsolatedAsyncioTestCase):
 
         task = self.running_tasks.create_task(coro())
         self.running_tasks.add_done_handler(handler)
-        await task
+        with self.assertRaises(ValueError):
+            await task
+        await asyncio.sleep(0)
         self.assertIsInstance(exc, ValueError)
 
     async def test_multiple_done_handlers(self):
@@ -125,6 +129,7 @@ class RunningTaskTest(IsolatedAsyncioTestCase):
         self.running_tasks.add_done_handler(handler)
         self.running_tasks.add_done_handler(handler)
         await task
+        await asyncio.sleep(0)
         self.assertEqual(result, [1, 1])
 
     async def test_remove_done_handler(self):
